@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if action == 'create' %}新增比賽{% else %}編輯比賽{% endif %}{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>{% if action == 'create' %}新增比賽{% else %}編輯比賽{% endif %}</h2>
+</div>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="league">聯賽 *</label>
+            <select id="league" name="league" required onchange="updateTeams()">
+                <option value="">請選擇聯賽</option>
+                {% for league in leagues %}
+                <option value="{{ league.id }}" {% if match and match.league == league %}selected{% endif %}>{{ league.name }} - {{ league.season }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="team">我方球隊 *</label>
+            <select id="team" name="team" required>
+                <option value="">請選擇球隊</option>
+                {% for team in teams %}
+                <option value="{{ team.id }}" data-league-ids="{% for league in team.leagues.all %}{{ league.id }}{% if not forloop.last %},{% endif %}{% endfor %}" {% if match and match.team == team %}selected{% endif %}>{{ team.name }} ({{ team.group }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="opponent_name">對手名稱 *</label>
+            <input type="text" id="opponent_name" name="opponent_name" value="{% if match %}{{ match.opponent_name }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="match_date">比賽時間 *</label>
+            <input type="datetime-local" id="match_date" name="match_date" value="{% if match %}{{ match.match_date|date:'Y-m-d\TH:i' }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="venue">比賽場地 *</label>
+            <input type="text" id="venue" name="venue" value="{% if match %}{{ match.venue }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="status">比賽狀態</label>
+            <select id="status" name="status">
+                <option value="scheduled" {% if match.status == 'scheduled' or not match %}selected{% endif %}>已安排</option>
+                <option value="in_progress" {% if match.status == 'in_progress' %}selected{% endif %}>進行中</option>
+                <option value="finished" {% if match.status == 'finished' %}selected{% endif %}>已結束</option>
+                <option value="cancelled" {% if match.status == 'cancelled' %}selected{% endif %}>已取消</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">備註</label>
+            <textarea id="notes" name="notes" rows="3">{% if match %}{{ match.notes }}{% endif %}</textarea>
+        </div>
+        
+        {% if action == 'edit' %}
+        <div class="form-group">
+            <label for="our_score">我方得分</label>
+            <input type="number" id="our_score" name="our_score" min="0" value="{% if match.our_score is not None %}{{ match.our_score }}{% endif %}">
+        </div>
+        
+        <div class="form-group">
+            <label for="opponent_score">對手得分</label>
+            <input type="number" id="opponent_score" name="opponent_score" min="0" value="{% if match.opponent_score is not None %}{{ match.opponent_score }}{% endif %}">
+        </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary">{% if action == 'create' %}建立比賽{% else %}更新比賽{% endif %}</button>
+            <a href="/dashboard/matches/" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    function updateTeams() {
+        const leagueSelect = document.getElementById('league');
+        const teamSelect = document.getElementById('team');
+        const selectedLeagueId = leagueSelect.value;
+        
+        // 隱藏所有球隊選項
+        for (let i = 0; i < teamSelect.options.length; i++) {
+            const option = teamSelect.options[i];
+            if (option.value === '') {
+                // 保留"請選擇球隊"選項
+                option.style.display = '';
+                continue;
+            }
+            
+            const leagueIds = option.getAttribute('data-league-ids');
+            if (!leagueIds) {
+                option.style.display = 'none';
+                continue;
+            }
+            
+            const leagueIdArray = leagueIds.split(',');
+            if (selectedLeagueId === '' || leagueIdArray.includes(selectedLeagueId)) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
+            }
+        }
+        
+        // 重置球隊選擇
+        teamSelect.value = '';
+    }
+    
+    // 頁面加載時執行一次
+    document.addEventListener('DOMContentLoaded', function() {
+        updateTeams();
+    });
+</script>
+{% endblock %}
+

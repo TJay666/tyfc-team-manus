@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}刪除球員確認{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>刪除球員確認</h2>
+</div>
+
+<div class="card">
+    <p>您確定要刪除球員「{{ player.user.username }}」嗎？</p>
+    <p><strong>注意：</strong>刪除球員將同時刪除該球員的所有比賽統計資料，此操作無法復原。</p>
+    
+    <div class="action-buttons">
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">確認刪除</button>
+        </form>
+        <a href="/dashboard/players/" class="btn btn-secondary">取消</a>
+    </div>
+</div>
+{% endblock %}
+

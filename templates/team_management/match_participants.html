@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}比賽參加球員{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>比賽參加球員</h2>
+    <a href="/dashboard/matches/" class="btn btn-secondary">返回比賽列表</a>
+</div>
+
+<div class="card">
+    <h3>比賽詳情</h3>
+    <div class="form-group">
+        <label>比賽時間：</label>
+        <p>{{ match.match_date|date:"Y-m-d H:i" }}</p>
+    </div>
+    <div class="form-group">
+        <label>聯賽：</label>
+        <p>{{ match.league.name }}</p>
+    </div>
+    <div class="form-group">
+        <label>我方球隊：</label>
+        <p>{{ match.team.name }}</p>
+    </div>
+    <div class="form-group">
+        <label>對手：</label>
+        <p>{{ match.opponent_name }}</p>
+    </div>
+    <div class="form-group">
+        <label>場地：</label>
+        <p>{{ match.venue }}</p>
+    </div>
+    
+    <h3>參加球員列表與數據編輯</h3>
+    <form method="post">
+        {% csrf_token %}
+        <div class="table-container">
+            <table class="table table-center-all">
+                <thead>
+                    <tr>
+                        <th class="col-name">球員暱稱</th>
+                        <th class="col-number">球衣號碼</th>
+                        <th class="col-position">位置</th>
+                        <th class="col-participation">參加狀態</th>
+                        <th class="col-stats">進球數</th>
+                        <th class="col-stats">助攻數</th>
+                        <th class="col-stats">黃牌數</th>
+                        <th class="col-stats">紅牌數</th>
+                        <th class="col-stats">出場時間(分鐘)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in players %}
+                    {% if player.is_participating %}
+                    <tr>
+                        <td class="player-nickname">{{ player.nickname }}</td>
+                        <td>{{ player.jersey_number|default:"-" }}</td>
+                        <td>{{ player.positions }}</td>
+                        <td>
+                            <span class="badge badge-success">參加</span>
+                        </td>
+                        <td>
+                            <input type="number" 
+                                   name="player_{{ player.id }}_goals" 
+                                   value="{{ player.goals }}" 
+                                   min="0" 
+                                   max="20"
+                                   class="form-control stats-input">
+                        </td>
+                        <td>
+                            <input type="number" 
+                                   name="player_{{ player.id }}_assists" 
+                                   value="{{ player.assists }}" 
+                                   min="0" 
+                                   max="20"
+                                   class="form-control stats-input">
+                        </td>
+                        <td>
+                            <input type="number" 
+                                   name="player_{{ player.id }}_yellow_cards" 
+                                   value="{{ player.yellow_cards }}" 
+                                   min="0" 
+                                   max="5"
+                                   class="form-control stats-input">
+                        </td>
+                        <td>
+                            <input type="number" 
+                                   name="player_{{ player.id }}_red_cards" 
+                                   value="{{ player.red_cards }}" 
+                                   min="0" 
+                                   max="1"
+                                   class="form-control stats-input">
+                        </td>
+                        <td>
+                            <input type="number" 
+                                   name="player_{{ player.id }}_minutes_played" 
+                                   value="{{ player.minutes_played }}" 
+                                   min="0" 
+                                   max="120"
+                                   class="form-control stats-input">
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% comment %}顯示不參加的球員{% endcomment %}
+                    {% for player in players %}
+                    {% if not player.is_participating %}
+                    <tr class="not-participating">
+                        <td class="player-nickname">{{ player.nickname }}</td>
+                        <td>{{ player.jersey_number|default:"-" }}</td>
+                        <td>{{ player.positions }}</td>
+                        <td>
+                            <span class="badge badge-secondary">不參加</span>
+                        </td>
+                        <td colspan="5" style="text-align: center; color: #999;">未參加比賽</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if not players %}
+                    <tr>
+                        <td colspan="9" style="text-align: center;">此球隊沒有球員。</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if players %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存球員數據</button>
+            <a href="/dashboard/matches/" class="btn btn-secondary">取消</a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<style>
+.stats-input {
+    width: 80px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.not-participating {
+    background-color: #f8f9fa;
+    opacity: 0.7;
+}
+
+.form-actions {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.form-actions .btn {
+    margin: 0 10px;
+}
+</style>
+{% endblock %}
+

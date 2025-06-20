@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if action == 'create' %}新增球員{% else %}編輯球員{% endif %}{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>{% if action == 'create' %}新增球員{% else %}編輯球員{% endif %}</h2>
+</div>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        
+        {% if action == 'create' %}
+        <div class="form-group">
+            <label for="user" class="form-label">選擇球員 *</label>
+            <select id="user" name="user" class="form-select" required>
+                <option value="">請選擇球員</option>
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }} ({{ user.email }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="nickname" class="form-label">球員暱稱 *</label>
+            <input type="text" id="nickname" name="nickname" class="form-input" value="{% if player %}{{ player.nickname }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="team" class="form-label">球隊 *</label>
+            <select id="team" name="team" class="form-select" required>
+                <option value="">請選擇球隊</option>
+                {% for team in teams %}
+                <option value="{{ team.id }}" {% if player and player.team == team %}selected{% endif %}>{{ team.name }} ({{ team.group }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="jersey_number" class="form-label">球衣號碼</label>
+            <input type="number" id="jersey_number" name="jersey_number" class="form-input" min="1" max="99" value="{% if player %}{{ player.jersey_number }}{% endif %}">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">位置 (可多選) *</label>
+            <div class="checkbox-group">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="positions" value="GK" {% if player and 'GK' in player.get_positions_list %}checked{% endif %}> 守門員
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="positions" value="DF" {% if player and 'DF' in player.get_positions_list %}checked{% endif %}> 後衛
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="positions" value="MF" {% if player and 'MF' in player.get_positions_list %}checked{% endif %}> 中場
+                </label>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="positions" value="FW" {% if player and 'FW' in player.get_positions_list %}checked{% endif %}> 前鋒
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="height" class="form-label">身高 (cm)</label>
+            <input type="number" id="height" name="height" class="form-input" step="0.1" value="{% if player and player.height %}{{ player.height }}{% endif %}">
+        </div>
+        
+        <div class="form-group">
+            <label for="weight" class="form-label">體重 (kg)</label>
+            <input type="number" id="weight" name="weight" class="form-input" step="0.1" value="{% if player and player.weight %}{{ player.weight }}{% endif %}">
+        </div>
+        
+        <div class="form-group">
+            <label for="age" class="form-label">年齡 *</label>
+            <input type="number" id="age" name="age" class="form-input" min="5" max="50" value="{% if player %}{{ player.age }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="stamina" class="form-label">體力 *</label>
+            <select id="stamina" name="stamina" class="form-select" required>
+                <option value="">請選擇體力等級</option>
+                <option value="優" {% if player and player.stamina == '優' %}selected{% endif %}>優</option>
+                <option value="佳" {% if player and player.stamina == '佳' %}selected{% endif %}>佳</option>
+                <option value="普" {% if player and player.stamina == '普' %}selected{% endif %}>普</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="speed" class="form-label">速度 *</label>
+            <select id="speed" name="speed" class="form-select" required>
+                <option value="">請選擇速度等級</option>
+                <option value="優" {% if player and player.speed == '優' %}selected{% endif %}>優</option>
+                <option value="佳" {% if player and player.speed == '佳' %}selected{% endif %}>佳</option>
+                <option value="普" {% if player and player.speed == '普' %}selected{% endif %}>普</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="technique" class="form-label">技術 *</label>
+            <select id="technique" name="technique" class="form-select" required>
+                <option value="">請選擇技術等級</option>
+                <option value="優" {% if player and player.technique == '優' %}selected{% endif %}>優</option>
+                <option value="佳" {% if player and player.technique == '佳' %}selected{% endif %}>佳</option>
+                <option value="普" {% if player and player.technique == '普' %}selected{% endif %}>普</option>
+            </select>
+        </div>
+        
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary">{% if action == 'create' %}建立球員{% else %}更新球員{% endif %}</button>
+            <a href="/dashboard/players/" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+.checkbox-item input[type="checkbox"] {
+    margin: 0;
+    width: auto;
+    background-color: white;
+}
+
+@media (max-width: 640px) {
+    .checkbox-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+

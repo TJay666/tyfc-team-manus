@@ -1,0 +1,40 @@
+# 忽略Python編譯檔案
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 忽略虛擬環境
+venv/
+venv_deploy/
+env/
+ENV/
+
+# 忽略IDE檔案
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 忽略系統檔案
+.DS_Store
+Thumbs.db
+
+# 忽略日誌檔案
+*.log
+
+# 忽略資料庫檔案（開發用）
+db.sqlite3
+
+# 忽略媒體檔案
+media/
+
+# 忽略收集的靜態檔案
+staticfiles/
+
+# 忽略環境變數檔案
+.env
+
+# 忽略臨時檔案
+*.tmp
+*.temp
+

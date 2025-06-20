@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}刪除比賽確認{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>刪除比賽確認</h2>
+</div>
+
+<div class="card">
+    <p>您確定要刪除比賽「{{ match.home_team.name }} vs {{ match.away_team.name }}」嗎？</p>
+    <p><strong>比賽時間：</strong>{{ match.match_date|date:"Y-m-d H:i" }}</p>
+    <p><strong>注意：</strong>刪除比賽將同時刪除該比賽的所有統計資料，此操作無法復原。</p>
+    
+    <div class="action-buttons">
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">確認刪除</button>
+        </form>
+        <a href="/dashboard/matches/" class="btn btn-secondary">取消</a>
+    </div>
+</div>
+{% endblock %}
+

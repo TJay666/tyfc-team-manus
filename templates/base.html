@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}桃園獵鷹宇宙{% endblock %}</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --primary: #1d3557;
+            --secondary: #457b9d;
+            --accent: #e63946;
+            --light: #f1faee;
+            --dark: #1d3557;
+            --success: #2a9d8f;
+            --warning: #e9c46a;
+            --danger: #e63946;
+            --conflict-warning-bg: #fff3e0;
+            --conflict-error-bg: #ffebee;
+            --disabled-bg: #e9ecef;
+            --disabled-text: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            padding-top: 100px; /* 增加頂部間距，避免導航欄遮擋內容 */
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1001;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            align-items: center;
+        }
+        
+        nav ul li {
+            margin-left: 1rem;
+        }
+        
+        nav ul li a, .auth-btn {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        
+        nav ul li a.active { 
+            border-bottom: 2px solid var(--warning); 
+        }
+        
+        nav ul li a:hover, .auth-btn:hover { 
+            color: var(--warning); 
+            background-color: rgba(255,255,255,0.1); 
+        }
+        
+        .auth-btn { 
+            border: 1px solid var(--secondary); 
+        }
+        
+        .auth-btn.logout-btn { 
+            border-color: var(--accent); 
+        }
+        
+        main {
+            padding: 2rem 0 2rem 0; /* 增加頂部間距 */
+            min-height: calc(100vh - 70px - 80px - 70px); 
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.2s, opacity 0.3s;
+            margin: 0.125rem;
+            font-size: 0.875rem;
+            transform: scale(0.7);
+            transform-origin: center;
+        }
+        
+        .btn:hover {
+            transform: scale(0.7) translateY(-2px);
+        }
+        
+        .btn-primary { 
+            background-color: var(--primary); 
+            color: white; 
+        }
+        
+        .btn-primary:hover:not(:disabled) { 
+            background-color: #162a48; 
+        }
+        
+        .btn-secondary { 
+            background-color: var(--secondary); 
+            color: white; 
+        }
+        
+        .btn-secondary:hover:not(:disabled) { 
+            background-color: #3d6e8c; 
+        }
+        
+        .btn-success { 
+            background-color: var(--success); 
+            color: white; 
+        }
+        
+        .btn-success:hover:not(:disabled) { 
+            background-color: #238a7f; 
+        }
+        
+        .btn-danger { 
+            background-color: var(--danger); 
+            color: white; 
+        }
+        
+        .btn-danger:hover:not(:disabled) { 
+            background-color: #d52b38; 
+        }
+        
+        .btn-warning { 
+            background-color: var(--warning); 
+            color: #333; 
+        }
+        
+        .btn-warning:hover:not(:disabled) { 
+            background-color: #e5b94e; 
+        }
+        
+        /* 輸入欄位樣式優化 */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        input[type="date"],
+        input[type="datetime-local"],
+        select,
+        textarea {
+            background-color: #fefcf3; /* 淺黃色/米色背景 */
+            border: 2px solid #e5e5e5;
+            border-radius: 6px;
+            padding: 1rem 1.5rem; /* 增加內邊距為2倍 */
+            margin: 0.75rem 0; /* 增加上下間距為2倍 */
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        input[type="datetime-local"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(29, 53, 87, 0.1);
+            background-color: #fffef8; /* 聚焦時稍微亮一點 */
+        }
+        
+        /* 表單組樣式 */
+        .form-group {
+            margin-bottom: 1.5rem; /* 增加表單組間距 */
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.75rem; /* 增加標籤與輸入欄位間距 */
+            font-weight: 600;
+            color: #333;
+            font-size: 1rem;
+        }
+        
+        /* 多選框樣式 */
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 0.75rem 0;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #fefcf3;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            border: 2px solid #e5e5e5;
+            transition: border-color 0.3s;
+        }
+        
+        .checkbox-item:hover {
+            border-color: var(--primary);
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin: 0;
+            width: auto;
+            background-color: transparent;
+        }
+        footer {
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: auto;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        /* 確保頁面內容不被固定footer遮擋 */
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            padding-top: 100px;
+            padding-bottom: 80px; /* 為固定footer留出空間 */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+            flex: 1; /* 讓主要內容區域填滿剩餘空間 */
+        }
+        
+        main {
+            padding: 2rem 0 2rem 0;
+            min-height: calc(100vh - 100px - 80px); /* 減去header和footer的高度 */
+            flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+            body { 
+                padding-top: 120px;
+                padding-bottom: 100px; /* 手機端footer高度調整 */
+            }
+            
+            footer {
+                padding: 1rem 0; /* 手機端footer內邊距調整 */
+            }
+            
+            header { 
+                padding: 0.5rem 0; 
+            }
+            
+            .nav-container { 
+                flex-direction: column; 
+                gap: 0.5rem; 
+            }
+            
+            nav ul { 
+                flex-wrap: wrap; 
+                justify-content: center; 
+                margin-top: 0.5rem;
+            }
+            
+            nav ul li { 
+                margin: 0.25rem 0.5rem; 
+            }
+            
+            .logo { 
+                font-size: 1.3rem; 
+                margin-bottom: 0.25rem; 
+            }
+            
+            .btn {
+                transform: scale(0.8);
+                margin: 0.25rem;
+            }
+            
+            .btn:hover {
+                transform: scale(0.8) translateY(-1px);
+            }
+            
+            .card {
+                margin: 0.5rem;
+                padding: 1rem;
+            }
+            
+            table {
+                font-size: 0.75rem;
+            }
+            
+            table th,
+            table td {
+                padding: 0.5rem 0.25rem;
+            }
+            
+            main {
+                padding: 2rem 0 2rem 0;
+            }
+            
+            /* 確保新增按鈕不被導航列遮擋 */
+            .page-header {
+                margin-top: 1rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .page-actions {
+                margin-bottom: 1rem;
+                padding-top: 0.5rem;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .btn {
+                transform: scale(0.75);
+            }
+            
+            .btn:hover {
+                transform: scale(0.75) translateY(-2px);
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="container nav-container">
+            <div class="logo">
+                <img src="{% static 'images/tyfc_logo.png' %}" alt="桃園獵鷹">
+                桃園獵鷹
+            </div>
+            <nav>
+                <ul>
+                    {% if user.is_authenticated %}
+                        <li><a href="/dashboard/" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>儀表板</a></li>
+                        {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+                            <li><a href="/dashboard/leagues/" {% if request.resolver_match.url_name == 'leagues' %}class="active"{% endif %}>聯賽管理</a></li>
+                            <li><a href="/dashboard/matches/" {% if request.resolver_match.url_name == 'matches' %}class="active"{% endif %}>比賽管理</a></li>
+                            <li><a href="/dashboard/teams/" {% if request.resolver_match.url_name == 'teams' %}class="active"{% endif %}>球隊管理</a></li>
+                            <li><a href="/dashboard/players/" {% if request.resolver_match.url_name == 'players' %}class="active"{% endif %}>球員管理</a></li>
+                        {% endif %}
+                        {% if user.user_type == 'player' %}
+                            <li><a href="/dashboard/my-matches/" {% if request.resolver_match.url_name == 'my_matches' %}class="active"{% endif %}>我的比賽</a></li>
+                        {% endif %}
+                        {% if user.user_type == 'admin' %}
+                            <li><a href="/accounts/user-management/" {% if request.resolver_match.url_name == 'user_management' %}class="active"{% endif %}>使用者管理</a></li>
+                        {% endif %}
+                        <li><a href="/dashboard/statistics/" {% if request.resolver_match.url_name == 'statistics' %}class="active"{% endif %}>統計數據</a></li>
+                        <li>
+                            <span class="text-sm">歡迎, {{ user.username }} ({{ user.get_user_type_display }})</span>
+                            <a href="{% url 'logout' %}" class="auth-btn logout-btn">登出</a>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="auth-btn">登入</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-700{% else %}bg-blue-100 text-blue-700{% endif %}" style="margin-top: 1.5rem;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 桃園獵鷹．版權所有</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

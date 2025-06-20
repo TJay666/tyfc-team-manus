@@ -1,0 +1,452 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}統計數據{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">統計數據</h1>
+    
+    <!-- 系統總覽統計 -->
+    {% if user.user_type == 'admin' %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-blue-100 p-6 rounded-lg shadow">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-blue-800 mb-2">球隊總數</h3>
+                <button onclick="showChart('teams')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">視覺化圖表</button>
+            </div>
+            <p class="text-3xl font-bold text-blue-600">{{ total_teams }}</p>
+        </div>
+        <div class="bg-green-100 p-6 rounded-lg shadow">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-green-800 mb-2">球員總數</h3>
+                <button onclick="showChart('players')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">視覺化圖表</button>
+            </div>
+            <p class="text-3xl font-bold text-green-600">{{ total_players }}</p>
+        </div>
+        <div class="bg-yellow-100 p-6 rounded-lg shadow">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-yellow-800 mb-2">比賽總數</h3>
+                <button onclick="showChart('matches')" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600">視覺化圖表</button>
+            </div>
+            <p class="text-3xl font-bold text-yellow-600">{{ total_matches }}</p>
+        </div>
+        <div class="bg-purple-100 p-6 rounded-lg shadow">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-purple-800 mb-2">已完成比賽</h3>
+                <button onclick="showChart('finished')" class="bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600">視覺化圖表</button>
+            </div>
+            <p class="text-3xl font-bold text-purple-600">{{ finished_matches }}</p>
+        </div>
+    </div>
+
+    <!-- 球隊詳細統計表 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-gray-800">球隊詳細統計</h3>
+                <button onclick="showChart('teamStats')" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">視覺化圖表</button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table class="table table-center-all">
+                <thead>
+                    <tr>
+                        <th class="col-name">球隊名稱</th>
+                        <th class="col-team">組別</th>
+                        <th class="col-name">教練</th>
+                        <th class="col-stats">球員數</th>
+                        <th class="col-stats">比賽數</th>
+                        <th class="col-stats">勝場</th>
+                        <th class="col-stats">敗場</th>
+                        <th class="col-stats">平手</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in teams %}
+                    <tr>
+                        <td>{{ team.name }}</td>
+                        <td>{{ team.group }}</td>
+                        <td>{{ team.coach.username }}</td>
+                        <td>{{ team.player_count }}</td>
+                        <td>{{ team.total_matches }}</td>
+                        <td>{{ team.wins }}</td>
+                        <td>{{ team.losses }}</td>
+                        <td>{{ team.draws }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">目前沒有球隊資料。</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 教練統計 -->
+    {% if user.user_type == 'coach' %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div class="bg-blue-100 p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-blue-800 mb-2">我的球隊數</h3>
+            <p class="text-3xl font-bold text-blue-600">{{ my_teams_count }}</p>
+        </div>
+        <div class="bg-green-100 p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-green-800 mb-2">我的球員數</h3>
+            <p class="text-3xl font-bold text-green-600">{{ my_players_count }}</p>
+        </div>
+        <div class="bg-yellow-100 p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-yellow-800 mb-2">我的比賽數</h3>
+            <p class="text-3xl font-bold text-yellow-600">{{ my_matches_count }}</p>
+        </div>
+    </div>
+
+    <!-- 我的球隊統計表 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+        <div class="px-6 py-4 bg-gray-50 border-b">
+            <h3 class="text-xl font-semibold text-gray-800">我的球隊統計</h3>
+        </div>
+        <div class="table-container">
+            <table class="table table-center-all">
+                <thead>
+                    <tr>
+                        <th class="col-name">球隊名稱</th>
+                        <th class="col-team">組別</th>
+                        <th class="col-stats">球員數</th>
+                        <th class="col-stats">比賽數</th>
+                        <th class="col-stats">勝場</th>
+                        <th class="col-stats">敗場</th>
+                        <th class="col-stats">平手</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in my_teams %}
+                    <tr>
+                        <td>{{ team.name }}</td>
+                        <td>{{ team.group }}</td>
+                        <td>{{ team.player_count }}</td>
+                        <td>{{ team.total_matches }}</td>
+                        <td>{{ team.wins }}</td>
+                        <td>{{ team.losses }}</td>
+                        <td>{{ team.draws }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center;">您目前沒有管理任何球隊。</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 球員統計 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b">
+            <h3 class="text-xl font-semibold text-gray-800">球員統計</h3>
+        </div>
+        <div class="table-container">
+            <table class="table table-center-all">
+                <thead>
+                    <tr>
+                        <th class="col-name">球員暱稱</th>
+                        <th class="col-team">球隊</th>
+                        <th class="col-stats">進球數</th>
+                        <th class="col-stats">助攻數</th>
+                        <th class="col-stats">黃牌</th>
+                        <th class="col-stats">紅牌</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player_stat in player_statistics %}
+                    <tr>
+                        <td class="player-nickname">{{ player_stat.player.nickname }}</td>
+                        <td>{{ player_stat.player.team.name }}</td>
+                        <td>{{ player_stat.total_goals }}</td>
+                        <td>{{ player_stat.total_assists }}</td>
+                        <td>{{ player_stat.total_yellow_cards }}</td>
+                        <td>{{ player_stat.total_red_cards }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center;">目前沒有球員統計資料。</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 球員統計 -->
+    {% if user.user_type == 'player' %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-blue-100 p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-blue-800 mb-2">出場次數</h3>
+            <p class="text-3xl font-bold text-blue-600">{{ player_stats.matches_played }}</p>
+        </div>
+        <div class="bg-green-100 p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-green-800 mb-2">進球數</h3>
+            <p class="text-3xl font-bold text-green-600">{{ player_stats.total_goals }}</p>
+        </div>
+        <div class="bg-yellow-100 p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-yellow-800 mb-2">助攻數</h3>
+            <p class="text-3xl font-bold text-yellow-600">{{ player_stats.total_assists }}</p>
+        </div>
+        <div class="bg-red-100 p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-red-800 mb-2">黃牌數</h3>
+            <p class="text-3xl font-bold text-red-600">{{ player_stats.total_yellow_cards }}</p>
+        </div>
+    </div>
+
+    <!-- 個人比賽記錄 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 bg-gray-50 border-b">
+            <h3 class="text-xl font-semibold text-gray-800">個人比賽記錄</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">比賽日期</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">對手</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">出場時間</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">進球</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">助攻</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">黃牌</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">紅牌</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for stat in player_match_stats %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ stat.match.match_date|date:"Y-m-d H:i" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if stat.player.team == stat.match.home_team %}
+                                vs {{ stat.match.away_team.name }}
+                            {% else %}
+                                vs {{ stat.match.home_team.name }}
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stat.minutes_played }} 分鐘</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stat.goals }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stat.assists }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stat.yellow_cards }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ stat.red_cards }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">目前沒有比賽記錄。</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 圖表懸浮視窗 -->
+<div id="chartModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 id="chartTitle" class="text-xl font-semibold text-gray-800"></h3>
+                <button onclick="closeChart()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <canvas id="modalChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let currentChart = null;
+
+function showChart(type) {
+    const modal = document.getElementById('chartModal');
+    const title = document.getElementById('chartTitle');
+    const ctx = document.getElementById('modalChart').getContext('2d');
+    
+    // 清除之前的圖表
+    if (currentChart) {
+        currentChart.destroy();
+    }
+    
+    modal.classList.remove('hidden');
+    
+    {% if user.user_type == 'admin' %}
+    switch(type) {
+        case 'teams':
+            title.textContent = '球隊組別分布';
+            currentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ group_labels|safe }},
+                    datasets: [{
+                        data: {{ group_data|safe }},
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            break;
+            
+        case 'players':
+            title.textContent = '各球隊球員數量分布';
+            const teamNames = [{% for team in teams %}'{{ team.name }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+            const playerCounts = [{% for team in teams %}{{ team.player_count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: teamNames,
+                    datasets: [{
+                        label: '球員數量',
+                        data: playerCounts,
+                        backgroundColor: '#36A2EB'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            break;
+            
+        case 'matches':
+            title.textContent = '比賽狀態分布';
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {{ match_status_labels|safe }},
+                    datasets: [{
+                        label: '比賽數量',
+                        data: {{ match_status_data|safe }},
+                        backgroundColor: [
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#FF6384'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            break;
+            
+        case 'finished':
+            title.textContent = '各球隊比賽完成情況';
+            const teamMatchCounts = [{% for team in teams %}{{ team.total_matches }}{% if not forloop.last %},{% endif %}{% endfor %}];
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: teamNames,
+                    datasets: [{
+                        label: '比賽總數',
+                        data: teamMatchCounts,
+                        backgroundColor: '#FFCE56'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            break;
+            
+        case 'teamStats':
+            title.textContent = '球隊勝負統計';
+            const wins = [{% for team in teams %}{{ team.wins }}{% if not forloop.last %},{% endif %}{% endfor %}];
+            const losses = [{% for team in teams %}{{ team.losses }}{% if not forloop.last %},{% endif %}{% endfor %}];
+            const draws = [{% for team in teams %}{{ team.draws }}{% if not forloop.last %},{% endif %}{% endfor %}];
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: teamNames,
+                    datasets: [{
+                        label: '勝場',
+                        data: wins,
+                        backgroundColor: '#4BC0C0'
+                    }, {
+                        label: '敗場',
+                        data: losses,
+                        backgroundColor: '#FF6384'
+                    }, {
+                        label: '平手',
+                        data: draws,
+                        backgroundColor: '#FFCE56'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            break;
+    }
+    {% endif %}
+}
+
+function closeChart() {
+    document.getElementById('chartModal').classList.add('hidden');
+    if (currentChart) {
+        currentChart.destroy();
+        currentChart = null;
+    }
+}
+
+// 點擊背景關閉懸浮視窗
+document.getElementById('chartModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeChart();
+    }
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}球隊管理{% endblock %}
+
+{% block content %}
+<div class="responsive-container">
+    <div class="page-header">
+        <h2>球隊管理</h2>
+        <div class="page-actions">
+            {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+            <a href="/dashboard/teams/create/" class="btn btn-primary">新增球隊</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-container">
+            <table class="table table-center-all">
+                <thead>
+                    <tr>
+                        <th class="col-name">球隊名稱</th>
+                        <th class="col-team">組別</th>
+                        <th class="col-name">教練</th>
+                        <th class="col-stats">球員數量</th>
+                        <th class="col-leagues">參加聯賽</th>
+                        <th class="col-date">建立時間</th>
+                        {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+                        <th class="col-actions">操作</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in teams %}
+                    <tr>
+                        <td class="col-name">{{ team.name }}</td>
+                        <td class="col-team">{{ team.group }}</td>
+                        <td class="col-name">{{ team.coach.username }}</td>
+                        <td class="col-stats">{{ team.player_set.count }}</td>
+                        <td class="col-leagues leagues-list">
+                            {% if team.leagues.all %}
+                                {% for league in team.leagues.all %}
+                                    <div class="league-item">{{ league.name }}</div>
+                                {% endfor %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="col-date">{{ team.created_at|date:"Y-m-d H:i" }}</td>
+                        {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+                        <td class="col-actions">
+                            <div class="action-buttons">
+                                {% if user.user_type == 'admin' or team.coach == user %}
+                                <a href="/dashboard/teams/{{ team.id }}/edit/" class="btn btn-secondary">編輯</a>
+                                <a href="/dashboard/teams/{{ team.id }}/delete/" class="btn btn-danger">刪除</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if user.user_type == 'admin' or user.user_type == 'coach' %}7{% else %}6{% endif %}" class="table-empty">目前沒有球隊資料。</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

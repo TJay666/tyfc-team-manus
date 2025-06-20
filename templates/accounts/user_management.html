@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}使用者管理 - 桃園獵鷹宇宙{% endblock %}
+
+{% block content %}
+<div class="responsive-container">
+    <div class="page-header">
+        <h1>使用者管理</h1>
+        <p class="text-gray-600">管理系統中的所有使用者帳號。</p>
+    </div>
+
+    <div class="card">
+        <h2>所有使用者</h2>
+        {% if users %}
+            <div class="table-container">
+                <table class="table table-center-all player-management-table">
+                    <thead>
+                        <tr>
+                            <th class="col-name">使用者名稱</th>
+                            <th class="col-email">電子郵件</th>
+                            <th class="col-role">類型</th>
+                            <th class="col-status">已審核</th>
+                            <th class="col-date">註冊時間</th>
+                            <th class="col-actions">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_obj in users %}
+                        <tr>
+                            <td class="col-name {% if user_obj.user_type == 'player' %}player-nickname{% endif %}">{{ user_obj.username }}</td>
+                            <td class="col-email">{{ user_obj.email }}</td>
+                            <td class="col-role">{{ user_obj.get_user_type_display }}</td>
+                            <td class="col-status">{% if user_obj.is_approved %}是{% else %}否{% endif %}</td>
+                            <td class="col-date">{{ user_obj.date_joined|date:"Y-m-d H:i" }}</td>
+                            <td class="col-actions">
+                                <div class="action-buttons">
+                                    {% if not user_obj.is_approved %}
+                                        <a href="/accounts/approve-user/{{ user_obj.id }}/" class="btn btn-success">審核通過</a>
+                                        <a href="/accounts/reject-user/{{ user_obj.id }}/" class="btn btn-danger">拒絕</a>
+                                    {% else %}
+                                        <a href="/accounts/edit-user/{{ user_obj.id }}/" class="btn btn-primary">編輯</a>
+                                        <span class="text-gray-500">已審核</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-gray-500 table-empty">目前沒有任何使用者。</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

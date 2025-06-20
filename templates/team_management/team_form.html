@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if action == 'create' %}新增球隊{% else %}編輯球隊{% endif %}{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>{% if action == 'create' %}新增球隊{% else %}編輯球隊{% endif %}</h2>
+</div>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="name">球隊名稱 *</label>
+            <input type="text" id="name" name="name" value="{% if team %}{{ team.name }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="group">組別 *</label>
+            <select id="group" name="group" required>
+                <option value="">請選擇組別</option>
+                <option value="幼兒組" {% if team and team.group == '幼兒組' %}selected{% endif %}>幼兒組</option>
+                <option value="國小組" {% if team and team.group == '國小組' %}selected{% endif %}>國小組</option>
+                <option value="國中組" {% if team and team.group == '國中組' %}selected{% endif %}>國中組</option>
+                <option value="高中組" {% if team and team.group == '高中組' %}selected{% endif %}>高中組</option>
+                <option value="成人組" {% if team and team.group == '成人組' %}selected{% endif %}>成人組</option>
+            </select>
+        </div>
+        
+        {% if coaches %}
+        <div class="form-group">
+            <label for="coach">教練 *</label>
+            <select id="coach" name="coach" required>
+                <option value="">請選擇教練</option>
+                {% for coach in coaches %}
+                <option value="{{ coach.id }}" {% if team and team.coach == coach %}selected{% endif %}>{{ coach.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="description">描述</label>
+            <textarea id="description" name="description" rows="4">{% if team %}{{ team.description }}{% endif %}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="leagues">參加聯賽</label>
+            <select id="leagues" name="leagues" multiple>
+                {% for league in leagues %}
+                <option value="{{ league.id }}" {% if team and league in team.leagues.all %}selected{% endif %}>{{ league.name }} - {{ league.season }} ({{ league.group }})</option>
+                {% endfor %}
+            </select>
+            <small>按住Ctrl鍵（Mac上為Command鍵）可選擇多個聯賽</small>
+        </div>
+        
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary">{% if action == 'create' %}建立球隊{% else %}更新球隊{% endif %}</button>
+            <a href="/dashboard/teams/" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

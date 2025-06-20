@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>註冊 - 桃園獵鷹宇宙</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+        
+        .gradient-background {
+            background: linear-gradient(135deg, #43389F 0%, #211E53 100%);
+        }
+        
+        .login-card-top {
+            background-color: #2C2A5A;
+        }
+        
+        .login-card-bottom {
+            background-color: #E9E4F0;
+        }
+        
+        .login-button {
+            background-color: #2C2A5A;
+        }
+        
+        .login-button:hover {
+            background-color: #3a377a;
+        }
+        
+        .input-field {
+            background-color: #F7F7FC;
+            border-color: #DCD9E8;
+        }
+    </style>
+</head>
+<body class="gradient-background flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+        <div class="login-card-top p-8 md:p-10 text-center">
+            <div class="mb-6">
+                <div class="w-24 h-24 md:w-28 md:h-28 bg-gray-300/20 rounded-full mx-auto flex items-center justify-center border-2 border-gray-400/30">
+                    <img src="{% static 'images/tyfc_logo.png' %}" alt="桃園獵鷹宇宙" class="w-16 h-16 md:w-20 md:h-20 rounded-full">
+                </div>
+                <p class="text-xs text-gray-300/80 mt-2">TAOYUAN UNIVERSE</p>
+                <p class="text-xs text-gray-300/80">FOOTBALL CLUB</p>
+            </div>
+
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">註冊帳號</h1>
+            <p class="text-gray-300/90 text-sm md:text-base">加入桃園獵鷹宇宙足球俱樂部</p>
+        </div>
+
+        <div class="login-card-bottom p-8 md:p-10">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 p-3 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form action="{% url 'register' %}" method="POST">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">使用者名稱</label>
+                    <input type="text" name="username" id="username" required
+                           class="input-field appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150" 
+                           placeholder="請輸入使用者名稱">
+                </div>
+
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">電子郵件</label>
+                    <input type="email" name="email" id="email" required
+                           class="input-field appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150" 
+                           placeholder="請輸入電子郵件">
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">密碼</label>
+                    <input type="password" name="password" id="password" required
+                           class="input-field appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150" 
+                           placeholder="請輸入密碼">
+                </div>
+
+                <div class="mb-6">
+                    <label for="user_type" class="block text-sm font-medium text-gray-700 mb-1">使用者類型</label>
+                    <select name="user_type" id="user_type" required
+                            class="input-field appearance-none block w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150">
+                        <option value="">請選擇使用者類型</option>
+                        <option value="player">球員</option>
+                        <option value="coach">教練</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button type="submit" 
+                            class="login-button w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150">
+                        註冊
+                    </button>
+                </div>
+            </form>
+
+            <p class="mt-8 text-center text-sm text-gray-600">
+                已經有帳號了嗎？
+                <a href="{% url 'login' %}" class="font-medium text-purple-700 hover:text-purple-600 transition duration-150">
+                    點此登入
+                </a>
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>
+

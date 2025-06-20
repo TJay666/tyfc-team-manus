@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}參加比賽{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>參加比賽</h2>
+</div>
+
+<div class="card">
+    <h3>比賽詳情</h3>
+    <div class="form-group">
+        <label>比賽時間：</label>
+        <p>{{ match.match_date|date:"Y-m-d H:i" }}</p>
+    </div>
+    <div class="form-group">
+        <label>聯賽：</label>
+        <p>{{ match.league.name }}</p>
+    </div>
+    <div class="form-group">
+        <label>對手：</label>
+        <p>{{ match.opponent_name }}</p>
+    </div>
+    <div class="form-group">
+        <label>場地：</label>
+        <p>{{ match.venue }}</p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>您是否參加此比賽？</label>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="radio" id="participate_yes" name="is_participating" value="true" required>
+                    <label for="participate_yes">是，我會參加</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="radio" id="participate_no" name="is_participating" value="false" required>
+                    <label for="participate_no">否，我不會參加</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary">確認</button>
+            <a href="/dashboard/my-matches/" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

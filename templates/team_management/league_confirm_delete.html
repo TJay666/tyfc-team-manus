@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}刪除聯賽確認{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>刪除聯賽確認</h2>
+</div>
+
+<div class="card">
+    <p>您確定要刪除聯賽「{{ league.name }} - {{ league.season }}」嗎？</p>
+    <p><strong>注意：</strong>刪除聯賽將同時刪除該聯賽的所有比賽資料，此操作無法復原。</p>
+    
+    <div class="action-buttons">
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">確認刪除</button>
+        </form>
+        <a href="/dashboard/leagues/" class="btn btn-secondary">取消</a>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}比賽管理{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>比賽管理</h2>
+    {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+    <a href="/dashboard/matches/create/" class="btn btn-primary">新增比賽</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table class="table table-center-all">
+            <thead>
+                <tr>
+                    <th class="col-time">比賽時間</th>
+                    <th class="col-name">聯賽</th>
+                    <th class="col-team">我方球隊</th>
+                    <th class="col-opponent">對手名稱</th>
+                    <th class="col-stats">比分</th>
+                    <th class="col-venue">場地</th>
+                    <th class="col-status">狀態</th>
+                    {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+                    <th class="col-actions">操作</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in matches %}
+                <tr>
+                    <td class="col-time">{{ match.match_date|date:"Y-m-d H:i" }}</td>
+                    <td class="col-name">{{ match.league.name }}</td>
+                    <td class="col-team">{{ match.team.name }}</td>
+                    <td class="col-opponent">{{ match.opponent_name }}</td>
+                    <td class="col-stats">
+                        {% if match.our_score is not None and match.opponent_score is not None %}
+                            {{ match.our_score }} : {{ match.opponent_score }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="col-venue">{{ match.venue }}</td>
+                    <td class="col-status">
+                        <div class="status-badge">
+                            {% if match.status == 'scheduled' %}
+                                <span class="badge badge-primary">已安排</span>
+                            {% elif match.status == 'in_progress' %}
+                                <span class="badge badge-warning">進行中</span>
+                            {% elif match.status == 'finished' %}
+                            <span class="badge badge-success">已結束</span>
+                        {% elif match.status == 'cancelled' %}
+                            <span class="badge badge-danger">已取消</span>
+                        {% endif %}
+                        </div>
+                    </td>
+                    {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+                    <td class="col-actions">
+                        <div class="action-buttons">
+                            {% if user.user_type == 'admin' or match.team.coach == user %}
+                            <a href="/dashboard/matches/{{ match.id }}/edit/" class="btn btn-secondary">編輯</a>
+                            <a href="/dashboard/matches/{{ match.id }}/delete/" class="btn btn-danger">刪除</a>
+                            <a href="/dashboard/matches/{{ match.id }}/participants/" class="btn btn-primary">查看參加球員</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if user.user_type == 'admin' or user.user_type == 'coach' %}8{% else %}7{% endif %}" style="text-align: center;">目前沒有比賽資料。</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

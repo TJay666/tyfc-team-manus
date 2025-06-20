@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if action == 'create' %}新增聯賽{% else %}編輯聯賽{% endif %}{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>{% if action == 'create' %}新增聯賽{% else %}編輯聯賽{% endif %}</h2>
+</div>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="name">聯賽名稱 *</label>
+            <input type="text" id="name" name="name" value="{% if league %}{{ league.name }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="season">賽季 *</label>
+            <input type="text" id="season" name="season" value="{% if league %}{{ league.season }}{% endif %}" placeholder="例如：2024春季" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="group">組別 *</label>
+            <select id="group" name="group" required>
+                <option value="">請選擇組別</option>
+                <option value="幼兒組" {% if league and league.group == '幼兒組' %}selected{% endif %}>幼兒組</option>
+                <option value="國小組" {% if league and league.group == '國小組' %}selected{% endif %}>國小組</option>
+                <option value="國中組" {% if league and league.group == '國中組' %}selected{% endif %}>國中組</option>
+                <option value="高中組" {% if league and league.group == '高中組' %}selected{% endif %}>高中組</option>
+                <option value="成人組" {% if league and league.group == '成人組' %}selected{% endif %}>成人組</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="start_date">開始日期 *</label>
+            <input type="date" id="start_date" name="start_date" value="{% if league %}{{ league.start_date|date:'Y-m-d' }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="end_date">結束日期 *</label>
+            <input type="date" id="end_date" name="end_date" value="{% if league %}{{ league.end_date|date:'Y-m-d' }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">描述</label>
+            <textarea id="description" name="description" rows="4">{% if league %}{{ league.description }}{% endif %}</textarea>
+        </div>
+        
+        {% if user.user_type == 'admin' %}
+        <div class="form-group">
+            <label for="coach">負責教練 *</label>
+            <select id="coach" name="coach" required>
+                <option value="">請選擇教練</option>
+                {% for coach_obj in coaches %}
+                <option value="{{ coach_obj.id }}" {% if league and league.coach == coach_obj %}selected{% endif %}>{{ coach_obj.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        
+        <div class="action-buttons">
+            <button type="submit" class="btn btn-primary">{% if action == 'create' %}建立聯賽{% else %}更新聯賽{% endif %}</button>
+            <a href="/dashboard/leagues/" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

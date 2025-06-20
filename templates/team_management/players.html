@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}球員管理{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <h2>球員管理</h2>
+    {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+    <a href="/dashboard/players/create/" class="btn btn-primary">新增球員</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table class="table table-center-all player-management-table">
+            <thead>
+                <tr>
+                    <th class="col-name">球員暱稱</th>
+                    <th class="col-team">球隊</th>
+                    <th class="col-number">球衣號碼</th>
+                    <th class="col-position">位置</th>
+                    <th class="col-stats">年齡</th>
+                    <th class="col-stats">身高</th>
+                    <th class="col-stats">體重</th>
+                    <th class="col-stats">體力</th>
+                    <th class="col-stats">速度</th>
+                    <th class="col-stats">技術</th>
+                    {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+                    <th class="col-actions">操作</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in players %}
+                <tr>
+                    <td class="player-nickname">{{ player.nickname }}</td>
+                    <td>{{ player.team.name }}</td>
+                    <td>{% if player.jersey_number %}#{{ player.jersey_number }}{% else %}-{% endif %}</td>
+                    <td>
+                        {% for position in player.get_positions_list %}
+                            <span class="badge badge-info">
+                                {% if position == 'GK' %}守門員
+                                {% elif position == 'DF' %}後衛
+                                {% elif position == 'MF' %}中場
+                                {% elif position == 'FW' %}前鋒
+                                {% else %}{{ position }}
+                                {% endif %}
+                            </span>
+                        {% endfor %}
+                    </td>
+                    <td>{{ player.age }}歲</td>
+                    <td>{% if player.height %}{{ player.height }} cm{% else %}-{% endif %}</td>
+                    <td>{% if player.weight %}{{ player.weight }} kg{% else %}-{% endif %}</td>
+                    <td>
+                        <span class="ability-badge ability-{{ player.stamina }}">{{ player.stamina }}</span>
+                    </td>
+                    <td>
+                        <span class="ability-badge ability-{{ player.speed }}">{{ player.speed }}</span>
+                    </td>
+                    <td>
+                        <span class="ability-badge ability-{{ player.technique }}">{{ player.technique }}</span>
+                    </td>
+                    {% if user.user_type == 'admin' or user.user_type == 'coach' %}
+                    <td>
+                        <div class="action-buttons">
+                            {% if user.user_type == 'admin' or player.team.coach == user %}
+                            <a href="/dashboard/players/{{ player.id }}/edit/" class="btn btn-secondary btn-sm">編輯</a>
+                            <a href="/dashboard/players/{{ player.id }}/delete/" class="btn btn-danger btn-sm">刪除</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if user.user_type == 'admin' or user.user_type == 'coach' %}11{% else %}10{% endif %}" style="text-align: center;">目前沒有球員資料。</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.badge {
+    display: inline-block;
+    padding: 0.25em 0.4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.badge-info {
+    color: #fff;
+    background-color: #17a2b8;
+}
+
+.ability-badge {
+    display: inline-block;
+    padding: 0.25em 0.5em;
+    font-size: 0.875em;
+    font-weight: 600;
+    border-radius: 0.375rem;
+    text-align: center;
+    min-width: 2rem;
+}
+
+.ability-優 {
+    background-color: #10b981;
+    color: white;
+}
+
+.ability-佳 {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.ability-普 {
+    background-color: #6b7280;
+    color: white;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .table th,
+    .table td {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .btn-sm {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
