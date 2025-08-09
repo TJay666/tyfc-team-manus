@@ -558,12 +558,29 @@ def match_create(request):
         league = get_object_or_404(League, id=league_id)
         team = get_object_or_404(Team, id=team_id)
         
-        # 直接使用match_date_str，不進行格式檢查
+        # 解析比賽日期時間字串，接受多種常見格式 (HTML datetime-local 或手動輸入)
+        from datetime import datetime
+        from django.utils import timezone as dj_tz
+        match_date = None
+        if match_date_str:
+            for fmt in ("%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"):
+                try:
+                    dt = datetime.strptime(match_date_str, fmt)
+                    # 若啟用時區且為 naive，轉為當前時區 aware
+                    if dj_tz.is_naive(dt) and dj_tz.is_aware(dj_tz.now()):
+                        dt = dj_tz.make_aware(dt, dj_tz.get_current_timezone())
+                    match_date = dt
+                    break
+                except ValueError:
+                    continue
+        if match_date is None:
+            match_date = dj_tz.now()
+
         match = Match.objects.create(
             league=league,
             team=team,
             opponent_name=opponent_name,
-            match_date=match_date_str,
+            match_date=match_date,
             venue=venue,
             our_score=our_score,
             opponent_score=opponent_score,
@@ -621,7 +638,22 @@ def match_edit(request, match_id):
         match.league = league
         match.team = team
         match.opponent_name = opponent_name
-        match.match_date = match_date_str
+        # 重新解析日期
+        from datetime import datetime
+        from django.utils import timezone as dj_tz
+        if match_date_str:
+            parsed = None
+            for fmt in ("%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"):
+                try:
+                    dt = datetime.strptime(match_date_str, fmt)
+                    if dj_tz.is_naive(dt) and dj_tz.is_aware(dj_tz.now()):
+                        dt = dj_tz.make_aware(dt, dj_tz.get_current_timezone())
+                    parsed = dt
+                    break
+                except ValueError:
+                    continue
+            if parsed:
+                match.match_date = parsed
         match.venue = venue
         match.our_score = our_score
         match.opponent_score = opponent_score
@@ -918,8 +950,8 @@ def statistics(request):
         context['total_teams'] = Team.objects.count()
         context['total_players'] = Player.objects.count()
         context['total_matches'] = Match.objects.count()
-        context['finished_matches'] = Match.objects.filter(status='completed').count()
-        
+        context['finished_matches'] = Match.objects.filter(status='finished').count()
+
         # 球隊統計
         teams = Team.objects.all()
         team_stats = []
@@ -927,12 +959,12 @@ def statistics(request):
             players_count = Player.objects.filter(team=team).count()
             matches = Match.objects.filter(team=team)
             matches_count = matches.count()
-            
-            # 計算勝負平 - 修正狀態過濾條件
+
+            # 計算勝負平 - 只統計已結束的比賽
             wins = 0
             losses = 0
             draws = 0
-            for match in matches.filter(status__in=['completed', 'finished']):
+            for match in matches.filter(status__in=['finished']):
                 if match.our_score is not None and match.opponent_score is not None:
                     if match.our_score > match.opponent_score:
                         wins += 1
@@ -940,30 +972,31 @@ def statistics(request):
                         losses += 1
                     else:
                         draws += 1
-            
-            # 創建帶有統計數據的team對象
+
+            # 動態屬性
             team.player_count = players_count
             team.total_matches = matches_count
             team.wins = wins
             team.losses = losses
             team.draws = draws
             team_stats.append(team)
-        
+
         context['teams'] = team_stats
-        
+
         # 組別分布數據
         from django.db.models import Count
         group_data = Team.objects.values('group').annotate(count=Count('group'))
         context['group_labels'] = [item['group'] for item in group_data]
         context['group_data'] = [item['count'] for item in group_data]
-        
+
         # 比賽狀態分布數據
         match_status_data = Match.objects.values('status').annotate(count=Count('status'))
         status_mapping = {
             'scheduled': '已安排',
             'in_progress': '進行中',
-            'completed': '已完成',
-            'cancelled': '已取消'
+            'finished': '已完成',
+            'cancelled': '已取消',
+            'postponed': '已延期'
         }
         context['match_status_labels'] = [status_mapping.get(item['status'], item['status']) for item in match_status_data]
         context['match_status_data'] = [item['count'] for item in match_status_data]
@@ -986,7 +1019,7 @@ def statistics(request):
             wins = 0
             losses = 0
             draws = 0
-            for match in matches.filter(status__in=['completed', 'finished']):
+            for match in matches.filter(status__in=['finished']):
                 if match.our_score is not None and match.opponent_score is not None:
                     if match.our_score > match.opponent_score:
                         wins += 1
@@ -1012,7 +1045,7 @@ def statistics(request):
             matches_played = PlayerMatchParticipation.objects.filter(
                 player=player, 
                 is_participating=True,
-                match__status='completed'
+                match__status='finished'
             ).count()
             
             total_goals = sum(stat.goals for stat in stats)
@@ -1042,7 +1075,7 @@ def statistics(request):
             matches_played = PlayerMatchParticipation.objects.filter(
                 player=player, 
                 is_participating=True,
-                match__status='completed'
+                match__status='finished'
             ).count()
             
             # 個人統計

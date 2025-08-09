@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}球員統計列表{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">球員統計列表</h1>
+<div class="table-container mb-6">
+<table class="table">
+  <thead class="bg-gray-50">
+    <tr>
+      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">球員</th>
+      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">比賽</th>
+      <th class="px-4 py-2">進球</th>
+      <th class="px-4 py-2">助攻</th>
+      <th class="px-4 py-2">分鐘</th>
+      <th class="px-4 py-2">操作</th>
+    </tr>
+  </thead>
+  <tbody class="bg-white divide-y divide-gray-200">
+  {% for s in stats %}
+    <tr>
+      <td class="px-4 py-2 text-sm">{{ s.player.nickname }}</td>
+      <td class="px-4 py-2 text-sm">{{ s.match.opponent_name }}<br><span class="text-xs text-gray-500">{{ s.match.match_date|date:'Y-m-d H:i' }}</span></td>
+      <td class="px-4 py-2 text-center">{{ s.goals }}</td>
+      <td class="px-4 py-2 text-center">{{ s.assists }}</td>
+      <td class="px-4 py-2 text-center">{{ s.minutes_played }}</td>
+      <td class="px-4 py-2 text-sm">
+        <a class="text-indigo-600 hover:underline" href="{% url 'player_stats_edit' s.id %}">編輯</a>
+        <a class="text-red-600 hover:underline ml-2" href="{% url 'player_stats_delete' s.id %}">刪除</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">尚無統計資料</td></tr>
+  {% endfor %}
+  </tbody>
+ </table>
+</div>
+<a href="{% url 'player_stats_create' %}" class="btn btn-primary">新增統計</a>
+{% endblock %}

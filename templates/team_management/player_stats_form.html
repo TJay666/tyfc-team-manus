@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}球員統計{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">{% if stats %}編輯{% else %}新增{% endif %}球員統計</h1>
+<form method="post" class="space-y-4">{% csrf_token %}
+  <div>
+    <label class="block text-sm font-medium mb-1">球員</label>
+    <select name="player" class="form-select w-full" required>
+      {% for p in players %}
+        <option value="{{ p.id }}" {% if stats and stats.player.id == p.id %}selected{% endif %}>{{ p.nickname }} ({{ p.team.name }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1">比賽</label>
+    <select name="match" class="form-select w-full" required>
+      {% for m in matches %}
+        <option value="{{ m.id }}" {% if stats and stats.match.id == m.id %}selected{% endif %}>{{ m.opponent_name }} ({{ m.match_date|date:'Y-m-d H:i' }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="grid grid-cols-3 gap-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">進球</label>
+      <input type="number" name="goals" value="{{ stats.goals|default:0 }}" min="0" class="form-input w-full" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">助攻</label>
+      <input type="number" name="assists" value="{{ stats.assists|default:0 }}" min="0" class="form-input w-full" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">上場分鐘</label>
+      <input type="number" name="minutes_played" value="{{ stats.minutes_played|default:0 }}" min="0" class="form-input w-full" />
+    </div>
+  </div>
+  <div class="flex gap-3">
+    <button type="submit" class="btn btn-primary">儲存</button>
+    <a href="{% url 'player_stats' %}" class="btn btn-secondary">返回</a>
+  </div>
+</form>
+{% endblock %}

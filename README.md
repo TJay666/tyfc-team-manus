@@ -97,8 +97,6 @@ git clone https://github.com/TJay666/tyfc-team-manus.git
 cd tyfc-team-manus
 ```
 
-建立Python虛擬環境以隔離專案依賴：
-
 ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
@@ -144,11 +142,6 @@ python manage.py runserver
 對於生產環境的部署，建議使用以下配置：
 
 1. **Web伺服器配置**：使用Nginx作為反向代理伺服器，處理靜態檔案服務和負載均衡。
-
-2. **應用伺服器配置**：使用Gunicorn作為WSGI伺服器，提供Python應用的執行環境。
-
-3. **資料庫配置**：對於大型部署，建議升級到PostgreSQL或MySQL等企業級資料庫。
-
 4. **安全配置**：啟用HTTPS、設定防火牆規則、配置安全標頭等。
 
 5. **監控與日誌**：設定系統監控和日誌記錄，確保系統的穩定運行。

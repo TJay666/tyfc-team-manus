@@ -35,5 +35,16 @@ urlpatterns = [
     
     # Statistics
     path('statistics/', views.statistics, name='statistics'),
+
+    # Player Stats (list + CRUD) - underscore variant to match existing redirects
+    path('player_stats/', views.player_stats, name='player_stats'),
+    path('player_stats/create/', views.player_stats_create, name='player_stats_create'),
+    path('player_stats/<int:stats_id>/edit/', views.player_stats_edit, name='player_stats_edit'),
+    path('player_stats/<int:stats_id>/delete/', views.player_stats_delete, name='player_stats_delete'),
+    # Optional hyphenated aliases for cleaner URLs
+    path('player-stats/', views.player_stats),
+    path('player-stats/create/', views.player_stats_create),
+    path('player-stats/<int:stats_id>/edit/', views.player_stats_edit),
+    path('player-stats/<int:stats_id>/delete/', views.player_stats_delete),
 ]
 
